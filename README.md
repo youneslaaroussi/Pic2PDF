@@ -48,9 +48,6 @@ Pic2PDF demonstrates ARM-optimized on-device AI for multimodal document understa
 
 **Architecture**: SwiftUI app with MediaPipe inference service, client-side PDF rendering (WKWebView + latex.js), and SwiftData persistence
 
-![ARM64 Compute Pipeline](diagrams/out/1_arm64_compute_pipeline.svg)
-
-
 ### Core Technologies
 
 | Component | Technology | Purpose |
