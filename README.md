@@ -439,14 +439,14 @@ Aggregate statistics computed on-demand:
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/youneslaaroussi/Img2Latex.git
-cd Img2Latex
+git clone https://github.com/youneslaaroussi/Pic2PDF.git
+cd Pic2PDF
 
 # 2. Install dependencies
 pod install
 
 # 3. Open the workspace (not the .xcodeproj)
-open Img2Latex.xcworkspace
+open Pic2PDF.xcworkspace
 ```
 
 ### Model Download
@@ -604,7 +604,7 @@ Benchmarks depend on device (chip, thermal state) and input complexity. To measu
 ## Technical Support
 
 For issues, questions, or contributions:
-- GitHub Issues: https://github.com/youneslaaroussi/Img2Latex/issues
+- GitHub Issues: https://github.com/youneslaaroussi/Pic2PDF/issues
 
 ---
 
