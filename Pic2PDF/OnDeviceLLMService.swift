@@ -638,7 +638,9 @@ final class OnDeviceLLMService: ObservableObject {
         - Do NOT use: \\includegraphics, \\geometry, \\pagestyle, \\fancyhdr, \\fancyhead, \\fancyfoot, \\renewcommand, tabular, table, tikz, tikzpicture, or any other packages
         - Do NOT add \\section, \\subsection, or explanatory text about the LaTeX code itself
         - Just transcribe exactly what you see in the image - text, equations, lists
-        - Use \\textbf{} for bold, \\textit{} for italic, \\[ \\] for display math, $ $ for inline math
+        - Use \\textbf{} for bold, \\textit{} for italic
+        - For math: Use ONLY \\[ \\] for display math and $ $ for inline math
+        - NEVER use \\begin{equation}, \\begin{align}, \\begin{gather}, \\begin{multline}, or ANY \\begin{}...\\end{} environments
         - Keep it minimal and direct - no commentary, no meta-descriptions
         - For diagrams or figures, just write [Figure: description] as plain text
 
@@ -668,6 +670,8 @@ final class OnDeviceLLMService: ObservableObject {
         - Use ONLY \\documentclass{article} with \\usepackage{amsmath} and \\usepackage{amssymb}
         - Do NOT use: \\includegraphics, \\geometry, \\pagestyle, \\fancyhdr, \\fancyhead, \\fancyfoot, \\renewcommand, tabular, table, tikz, tikzpicture, or any other packages
         - Do NOT add \\section, \\subsection, or explanatory text about the LaTeX code itself
+        - For math: Use ONLY \\[ \\] for display math and $ $ for inline math
+        - NEVER use \\begin{equation}, \\begin{align}, \\begin{gather}, \\begin{multline}, or ANY \\begin{}...\\end{} environments
         - Keep it minimal and direct - just the content
         - Return ONLY the refined LaTeX code, no explanations
 

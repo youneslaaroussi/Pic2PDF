@@ -135,10 +135,71 @@ struct LaTeXWebView: UIViewRepresentable {
             cleaned = cleaned.replacingOccurrences(of: #"\\begin\{tikzpicture\}[\s\S]*?\\end\{tikzpicture\}"#, with: "[Figure removed - not supported]", options: .regularExpression)
             cleaned = cleaned.replacingOccurrences(of: #"\\usepackage\{tikz\}\n?"#, with: "", options: .regularExpression)
             
+            // ===== REMOVE UNSUPPORTED MATH ENVIRONMENTS (equation, align, etc.) =====
+            // Replace equation environment with \[ \] display math
+            cleaned = replaceEnvironment(in: cleaned, name: "equation", removeAlignMarkers: false)
+            
+            // Replace align environment with \[ \] display math (remove & markers)
+            cleaned = replaceEnvironment(in: cleaned, name: "align", removeAlignMarkers: true)
+            
+            // Replace gather environment with \[ \] display math
+            cleaned = replaceEnvironment(in: cleaned, name: "gather", removeAlignMarkers: false)
+            
+            // Replace multline environment with \[ \] display math
+            cleaned = replaceEnvironment(in: cleaned, name: "multline", removeAlignMarkers: false)
+            
+            // Remove other specific unsupported environments (but preserve document, itemize, enumerate)
+            let unsupportedEnvs = ["figure", "table", "tabular", "tikzpicture", "minipage", "verbatim", "lstlisting"]
+            for env in unsupportedEnvs {
+                cleaned = cleaned.replacingOccurrences(
+                    of: #"\\begin\{\#(env)\*?\}[\s\S]*?\\end\{\#(env)\*?\}"#,
+                    with: "[Environment '\(env)' removed - not supported]",
+                    options: .regularExpression
+                )
+            }
+            
             // Remove multiple blank lines
             cleaned = cleaned.replacingOccurrences(of: #"\n\n\n+"#, with: "\n\n", options: .regularExpression)
             
             return cleaned
+        }
+        
+        private func replaceEnvironment(in text: String, name: String, removeAlignMarkers: Bool) -> String {
+            let pattern = #"\\begin\{\#(name)\*?\}[\s\S]*?\\end\{\#(name)\*?\}"#
+            guard let regex = try? NSRegularExpression(pattern: pattern, options: []) else {
+                return text
+            }
+            
+            let nsText = text as NSString
+            let matches = regex.matches(in: text, options: [], range: NSRange(location: 0, length: nsText.length))
+            
+            var result = text
+            // Process matches in reverse to maintain correct indices
+            for match in matches.reversed() {
+                let matchRange = match.range
+                let matchText = nsText.substring(with: matchRange)
+                
+                // Extract content between \begin and \end
+                var content = matchText
+                    .replacingOccurrences(of: #"\\begin\{\#(name)\*?\}\s*"#, with: "", options: .regularExpression)
+                    .replacingOccurrences(of: #"\s*\\end\{\#(name)\*?\}"#, with: "", options: .regularExpression)
+                
+                if removeAlignMarkers {
+                    content = content.replacingOccurrences(of: "&", with: "")
+                }
+                
+                content = content
+                    .replacingOccurrences(of: #"\\\\"#, with: "\n", options: .regularExpression)
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                
+                let replacement = "\\[\n\(content)\n\\]"
+                
+                if let range = Range(matchRange, in: result) {
+                    result = result.replacingCharacters(in: range, with: replacement)
+                }
+            }
+            
+            return result
         }
     }
 }

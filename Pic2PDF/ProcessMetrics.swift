@@ -25,16 +25,8 @@ class ProcessMetrics {
             return 0.0
         }
     }
-
-    /// Returns CPU usage as a percentage (0-100)
-    /// Note: For demo purposes, returns simulated CPU usage
-    /// Real CPU measurement on iOS requires complex host_statistics calls
     static func currentCPUUsage() -> Double {
-        // For hackathon demo, return realistic simulated values
-        // In production, would use host_statistics or similar
-        let baseUsage: Double = 15.0 // Base usage for iOS app
-        let variation = Double.random(in: -5...10) // Add some variation
-        return min(max(baseUsage + variation, 5), 95) // Keep within realistic bounds
+        return 0
     }
 
     /// Returns system uptime in seconds

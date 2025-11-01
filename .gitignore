@@ -100,3 +100,14 @@ secrets.plist
 # macOS
 .DS_Store
 
+# Python / Diagrams
+diagrams/venv/
+diagrams/__pycache__/
+*.pyc
+*.pyo
+# Keep generated diagrams in repo
+!diagrams/out/*.svg
+
+# Reference materials
+mock-diagrams/
+
