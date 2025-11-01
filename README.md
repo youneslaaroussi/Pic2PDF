@@ -1,4 +1,4 @@
-# Pic2PDF
+# Img2Latex Whitepaper
 
 **Stream multimodal AI inference at 18+ tokens/sec. Watch Gemma 3N vision models convert math to LaTeX in real-time. Zero cloud APIs. Pure ARM64.**
 
@@ -12,7 +12,7 @@
 
 ![Architecture Diagram](./diagrams/ArchitectureDiagram.png)
 
-Pic2PDF converts handwritten math, lecture notes, and problem sets into professional PDFs—**100% on-device** with **ARM-optimized AI**. Built for the Arm AI Developer Challenge 2025, this app demonstrates production-grade multimodal LLM deployment with real-time performance monitoring on iOS.
+Img2Latex converts handwritten math, lecture notes, and problem sets into professional PDFs—**100% on-device** with **ARM-optimized AI**. Built for the Arm AI Developer Challenge 2025, this app demonstrates production-grade multimodal LLM deployment with real-time performance monitoring on iOS.
 
 ## Key Features
 
@@ -32,7 +32,7 @@ Pic2PDF converts handwritten math, lecture notes, and problem sets into professi
 
 ### Overview
 
-Pic2PDF demonstrates ARM-optimized on-device AI for multimodal document understanding:
+Img2Latex demonstrates ARM-optimized on-device AI for multimodal document understanding:
 
 **AI/ML Stack**:
 - **Gemma 3N (2B/4B)** [[1]](#references): INT4 quantized vision-language models running entirely on ARM CPU
@@ -97,7 +97,7 @@ INT4 quantization reduces model size by 4x compared to FP16 while maintaining ac
 
 ## ARM64 Optimizations
 
-Pic2PDF leverages ARM64-specific features throughout the pipeline for maximum performance and energy efficiency. MediaPipe integrates ARM-optimized backends (KleidiAI [[4]](#references)/XNNPACK) and uses SME2 automatically on supported hardware; older devices fall back to NEON.
+Img2Latex leverages ARM64-specific features throughout the pipeline for maximum performance and energy efficiency. MediaPipe integrates ARM-optimized backends (KleidiAI [[4]](#references)/XNNPACK) and uses SME2 automatically on supported hardware; older devices fall back to NEON.
 
 ![MediaPipe Architecture](diagrams/out/4_mediapipe_architecture.svg)
 
@@ -439,14 +439,14 @@ Aggregate statistics computed on-demand:
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/youneslaaroussi/Pic2PDF.git
-cd Pic2PDF
+git clone https://github.com/youneslaaroussi/Img2Latex.git
+cd Img2Latex
 
 # 2. Install dependencies
 pod install
 
 # 3. Open the workspace (not the .xcodeproj)
-open Pic2PDF.xcworkspace
+open Img2Latex.xcworkspace
 ```
 
 ### Model Download
@@ -506,7 +506,7 @@ Managed via CocoaPods (see `Podfile`):
 ```ruby
 platform :ios, '17.0'
 
-target 'Pic2PDF' do
+target 'Img2Latex' do
   use_frameworks!
 
   # MediaPipe for on-device AI inference
@@ -531,8 +531,8 @@ end
 ## Project Structure
 
 ```
-Pic2PDF/
-├── Pic2PDFApp.swift                   # App entry point, manages AppState and StorageManager
+Img2Latex/
+├── Img2LatexApp.swift                   # App entry point, manages AppState and StorageManager
 ├── AppState.swift                     # Onboarding state singleton
 ├── ContentView.swift                  # Main TabView with Generate/History/Analytics/Settings
 │
@@ -604,11 +604,11 @@ Benchmarks depend on device (chip, thermal state) and input complexity. To measu
 ## Technical Support
 
 For issues, questions, or contributions:
-- GitHub Issues: https://github.com/youneslaaroussi/Pic2PDF/issues
+- GitHub Issues: https://github.com/youneslaaroussi/Img2Latex/issues
 
 ---
 
-**Built with ❤️ for the Arm AI Developer Challenge 2025**
+**Built with ❤️ for the [Arm AI Developer Challenge 2025](https://arm-ai-developer-challenge.devpost.com/)**
 
 ---
 
