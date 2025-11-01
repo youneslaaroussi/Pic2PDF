@@ -9,6 +9,9 @@
 [![On-Device](https://img.shields.io/badge/100%25-On--Device-purple?style=flat-square)]()
 [![INT4 Quantized](https://img.shields.io/badge/INT4-Quantized-yellow?style=flat-square)]()
 
+
+![Architecture Diagram](./diagrams/ArchitectureDiagram.png)
+
 Pic2PDF converts handwritten math, lecture notes, and problem sets into professional PDFs—**100% on-device** with **ARM-optimized AI**. Built for the Arm AI Developer Challenge 2025, this app demonstrates production-grade multimodal LLM deployment with real-time performance monitoring on iOS.
 
 ## Key Features
@@ -32,31 +35,31 @@ Pic2PDF converts handwritten math, lecture notes, and problem sets into professi
 Pic2PDF demonstrates ARM-optimized on-device AI for multimodal document understanding:
 
 **AI/ML Stack**:
-- **Gemma 3N (2B/4B)**: INT4 quantized vision-language models running entirely on ARM CPU
-- **MediaPipe Tasks GenAI 0.10.24**: Inference runtime with integrated ARM backends (KleidiAI/XNNPACK)
+- **Gemma 3N (2B/4B)** [[1]](#references): INT4 quantized vision-language models running entirely on ARM CPU
+- **MediaPipe Tasks GenAI 0.10.24** [[2]](#references): Inference runtime with integrated ARM backends (KleidiAI/XNNPACK)
 - **SME2 Compatibility**: Automatic use of Scalable Matrix Extension 2 on iPhone 16/M4; NEON fallback on older devices
 - **Vision Pipeline**: Extracts TFLite vision encoder/adapter from `.task` files; processes up to 5 images per inference
 
 **ARM64 Optimizations**:
-- **Accelerate Framework**: vImage SIMD operations for parallel image downscaling (ARM NEON)
+- **Accelerate Framework** [[3]](#references): vImage SIMD operations for parallel image downscaling (ARM NEON)
 - **INT4 Quantization**: 4-bit weights optimized for ARM integer pipelines (~500MB for 2B model)
 - **Thermal Management**: ProcessInfo monitoring with adaptive performance tuning
-- **Zero GPU Dependency**: Pure CPU inference leveraging ARM's efficient matrix operations
+- **Zero GPU Dependency**: Pure CPU inference leveraging ARM's efficient matrix operations via KleidiAI [[4]](#references)
 
 **Architecture**: SwiftUI app with MediaPipe inference service, client-side PDF rendering (WKWebView + latex.js), and SwiftData persistence
 
-![System Architecture](diagrams/out/architecture_overview.svg)
+![ARM64 Compute Pipeline](diagrams/out/1_arm64_compute_pipeline.svg)
 
 
 ### Core Technologies
 
 | Component | Technology | Purpose |
 |-----------|------------|---------|
-| **AI Inference** | MediaPipe Tasks GenAI 0.10.24 | On-device LLM runtime (ARM-optimized via KleidiAI/XNNPACK; SME2-compatible on supported devices) |
-| **Vision Processing** | Gemma 3N Vision Encoder/Adapter | Multimodal image understanding (extracted from .task files) |
-| **ARM Optimization** | Accelerate Framework (vImage) | SIMD-accelerated image downscaling |
+| **AI Inference** | MediaPipe Tasks GenAI 0.10.24 [[2]](#references) | On-device LLM runtime (ARM-optimized via KleidiAI [[4]](#references)/XNNPACK; SME2-compatible on supported devices) |
+| **Vision Processing** | Gemma 3N Vision Encoder/Adapter [[1]](#references) | Multimodal image understanding (extracted from .task files) |
+| **ARM Optimization** | Accelerate Framework (vImage) [[3]](#references) | SIMD-accelerated image downscaling |
 | **Model Format** | INT4 Quantized TFLite | 4-bit quantization for memory efficiency (~500MB for 2B, ~900MB for 4B) |
-| **PDF Rendering** | WKWebView + latex.js | Client-side LaTeX compilation to PDF |
+| **PDF Rendering** | WKWebView + latex.js [[5]](#references) | Client-side LaTeX compilation to PDF |
 | **Data Persistence** | SwiftData | Type-safe local storage |
 | **UI Framework** | SwiftUI + Charts | Declarative UI with real-time performance visualization |
 
@@ -97,9 +100,9 @@ INT4 quantization reduces model size by 4x compared to FP16 while maintaining ac
 
 ## ARM64 Optimizations
 
-Pic2PDF leverages ARM64-specific features throughout the pipeline for maximum performance and energy efficiency. MediaPipe integrates ARM-optimized backends (KleidiAI/XNNPACK) and uses SME2 automatically on supported hardware; older devices fall back to NEON.
+Pic2PDF leverages ARM64-specific features throughout the pipeline for maximum performance and energy efficiency. MediaPipe integrates ARM-optimized backends (KleidiAI [[4]](#references)/XNNPACK) and uses SME2 automatically on supported hardware; older devices fall back to NEON.
 
-![ARM64 Optimizations](diagrams/out/arm_optimizations.svg)
+![MediaPipe Architecture](diagrams/out/4_mediapipe_architecture.svg)
 
 
 ### 1. vImage Accelerated Downscaling
@@ -121,6 +124,8 @@ private func downscaleCGImageAccelerate(_ src: CGImage, maxDimension: Int) -> CG
 - Parallel processing via Swift TaskGroup (up to 10 images simultaneously)
 - SIMD-accelerated resampling (ARM NEON intrinsics)
 - Lower memory footprint during vision encoding
+
+*Note: Performance improvements enabled by KleidiAI integration through MediaPipe's XNNPACK backend [[4]](#references).*
 
 ### 2. INT4 Quantization Pipeline
 
@@ -161,7 +166,7 @@ Thermal states: `.nominal`, `.fair`, `.serious`, `.critical` → UI displays war
 
 ## Image-to-PDF Pipeline
 
-![AI Pipeline](diagrams/out/ai_pipeline.svg)
+![Multimodal Inference Flow](diagrams/out/2_multimodal_inference_flow.svg)
 
 ### End-to-End Flow
 
@@ -329,7 +334,7 @@ Real-time and historical performance analytics UI using Charts framework.
 
 ## Performance Monitoring
 
-![Performance Monitoring](diagrams/out/performance_monitoring.svg)
+![Memory & Thermal Management](diagrams/out/3_memory_thermal_management.svg)
 
 ### Metrics Collection
 
@@ -385,7 +390,7 @@ Aggregate statistics computed on-demand:
 
 ## Data Flow
 
-![Data Flow](diagrams/out/data_flow.svg)
+![INT4 Quantization Impact](diagrams/out/5_int4_quantization_impact.svg)
 
 ### Path 1: Image → LaTeX → PDF → Storage
 
@@ -461,7 +466,7 @@ You have two options for obtaining the Gemma 3N models:
 
 #### Option 2: Manual Download
 
-Download pre-converted models from HuggingFace:
+Download pre-converted models from HuggingFace [[1]](#references):
 
 - **Gemma 3N 2B (INT4)**: [google/gemma-3n-E2B-it-litert-preview](https://huggingface.co/google/gemma-3n-E2B-it-litert-preview/tree/main)
 - **Gemma 3N 4B (INT4)**: [google/gemma-3n-E4B-it-litert-preview](https://huggingface.co/google/gemma-3n-E4B-it-litert-preview/tree/main)
@@ -520,7 +525,7 @@ end
 
 | Dependency | Version | Purpose |
 |------------|---------|---------|
-| MediaPipeTasksGenAI | 0.10.24 | Swift API for LLM inference (ARM-optimized backends via KleidiAI/XNNPACK; SME2 on supported devices) |
+| MediaPipeTasksGenAI | 0.10.24 | Swift API for LLM inference (ARM-optimized backends via KleidiAI [[4]](#references)/XNNPACK; SME2 on supported devices) |
 | MediaPipeTasksGenAIC | 0.10.24 | C implementation (required by GenAI) |
 | ZIPFoundation | ~> 0.9 | Extract vision encoder/adapter from .task archives |
 
@@ -607,4 +612,24 @@ For issues, questions, or contributions:
 ---
 
 **Built with ❤️ for the Arm AI Developer Challenge 2025**
+
+---
+
+## References
+
+1. **Gemma 3N Models** - Google DeepMind's multimodal vision-language models  
+   https://huggingface.co/google/gemma-3n-E2B
+
+2. **MediaPipe Tasks GenAI** - Google AI Edge's on-device inference framework  
+   https://ai.google.dev/edge/mediapipe/framework/getting_started/ios
+
+3. **Apple Accelerate Framework** - High-performance vector and matrix operations  
+   https://developer.apple.com/documentation/accelerate
+
+4. **KleidiAI** - Arm's optimized micro-kernels for AI workloads on ARM CPUs  
+   GitHub: https://github.com/ARM-software/kleidiai  
+   Integration Announcement: https://newsroom.arm.com/blog/kleidiai-integration-mediapipe
+
+5. **LaTeX.js** - Client-side LaTeX to HTML compiler  
+   https://latex.js.org/usage.html#library
 
