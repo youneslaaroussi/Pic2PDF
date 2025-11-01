@@ -153,8 +153,10 @@ final class GemmaChatSession {
         options.topp = topP
         options.temperature = temperature
         options.enableVisionModality = enableVisionModality
-
+        
+        NSLog("[GemmaChatSession] Creating session with visionModality=\(enableVisionModality), topK=\(topK), temp=\(temperature)")
         session = try LlmInference.Session(llmInference: model.inference, options: options)
+        NSLog("[GemmaChatSession] Session created successfully")
     }
 
     /// Adds an image to the current query context
@@ -247,6 +249,27 @@ final class OnDeviceLLMService: ObservableObject {
 
     private var isPerformanceModeEnabled: Bool {
         return UserDefaults.standard.bool(forKey: "performanceModeEnabled")
+    }
+    
+    // User-configurable LLM parameters
+    private var userTemperature: Float {
+        let value = UserDefaults.standard.double(forKey: "llmTemperature")
+        return Float(value > 0 ? value : 0.7)
+    }
+    
+    private var userTopP: Float {
+        let value = UserDefaults.standard.double(forKey: "llmTopP")
+        return Float(value > 0 ? value : 0.9)
+    }
+    
+    private var userTopK: Int {
+        let value = UserDefaults.standard.integer(forKey: "llmTopK")
+        return value > 0 ? value : 40
+    }
+    
+    private var userMaxTokens: Int {
+        let value = UserDefaults.standard.integer(forKey: "llmMaxTokens")
+        return value > 0 ? value : 2000
     }
 
     // MARK: - Singleton
@@ -355,8 +378,8 @@ final class OnDeviceLLMService: ObservableObject {
             let startTime = Date()
             os_signpost(.begin, log: signpostLog, name: "ModelInit", "Model=%{public}@", preferredModel.displayName)
 
-            // Adjust max tokens in performance mode for speed/thermal headroom
-            let maxTokens = isPerformanceModeEnabled ? 1200 : 2000
+            // Use user-configured max tokens, with performance mode override
+            let maxTokens = isPerformanceModeEnabled ? min(1200, userMaxTokens) : userMaxTokens
             currentModel = try OnDeviceGemmaModel(modelIdentifier: preferredModel, maxTokens: maxTokens)
             currentSession = try GemmaChatSession(model: currentModel!)
 
@@ -430,14 +453,22 @@ final class OnDeviceLLMService: ObservableObject {
             realtimeMemoryHistory = [] // Clear real-time memory history
         }
 
-        // Create a new session for this generation task (tune for performance mode)
+        // Create a new session for this generation task using user settings
+        // Performance mode can adjust parameters slightly for speed
+        let temp = isPerformanceModeEnabled ? min(userTemperature, 0.6) : userTemperature
+        let tP = isPerformanceModeEnabled ? min(userTopP, 0.95) : userTopP
+        let tK = isPerformanceModeEnabled ? max(userTopK, 60) : userTopK
+        
+        NSLog("[OnDeviceLLM] Creating vision-enabled session (perfMode=\(isPerformanceModeEnabled))")
+        NSLog("[OnDeviceLLM] Parameters: temp=\(temp), topP=\(tP), topK=\(tK)")
         let session = try GemmaChatSession(
             model: currentModel!,
-            topK: isPerformanceModeEnabled ? 60 : 40,
-            topP: isPerformanceModeEnabled ? 0.95 : 0.9,
-            temperature: isPerformanceModeEnabled ? 0.6 : 0.7,
+            topK: tK,
+            topP: tP,
+            temperature: temp,
             enableVisionModality: true
         )
+        NSLog("[OnDeviceLLM] Session created with vision modality enabled")
 
         // Downscale images in parallel (Accelerate) for lower memory and faster vision path
         os_signpost(.begin, log: signpostLog, name: "PreprocessImages")
@@ -457,13 +488,16 @@ final class OnDeviceLLMService: ObservableObject {
         }
         os_signpost(.end, log: signpostLog, name: "PreprocessImages")
 
+        NSLog("[OnDeviceLLM] Adding \(processedCGImages.count) images to query")
         for (index, cgImage) in processedCGImages.enumerated() {
+            NSLog("[OnDeviceLLM] Adding image \(index + 1): \(cgImage.width)x\(cgImage.height)")
             try session.addImageToQuery(image: cgImage)
             await MainActor.run {
                 status.statusMessage = "Processing image \(index + 1) of \(processedCGImages.count)..."
                 status.progress = 0.1 + (0.3 * Double(index + 1) / Double(processedCGImages.count))
             }
         }
+        NSLog("[OnDeviceLLM] All images added successfully")
 
         await MainActor.run {
             status.statusMessage = "Generating LaTeX with on-device AI..."
@@ -472,6 +506,7 @@ final class OnDeviceLLMService: ObservableObject {
 
         // Create the prompt for LaTeX generation
         let prompt = createLaTeXGenerationPrompt(additionalPrompt: additionalPrompt)
+        NSLog("[OnDeviceLLM] Using prompt: \(prompt.prefix(200))...")
 
         // Generate LaTeX using streaming response (30fps throttled UI updates)
         let stream = try await session.generateLaTeX(prompt: prompt)
@@ -555,12 +590,18 @@ final class OnDeviceLLMService: ObservableObject {
             realtimeMemoryHistory = [] // Clear real-time memory history
         }
 
-        // Create a new session for refinement (text-only, no images)
+        // Create a new session for refinement (text-only, no images) using user settings
+        let temp = isPerformanceModeEnabled ? min(userTemperature, 0.6) : userTemperature
+        let tP = isPerformanceModeEnabled ? min(userTopP, 0.95) : userTopP
+        let tK = isPerformanceModeEnabled ? max(userTopK, 60) : userTopK
+        
+        NSLog("[OnDeviceLLM] Creating text-only session for refinement")
+        NSLog("[OnDeviceLLM] Parameters: temp=\(temp), topP=\(tP), topK=\(tK)")
         let session = try GemmaChatSession(
             model: currentModel!,
-            topK: isPerformanceModeEnabled ? 60 : 40,
-            topP: isPerformanceModeEnabled ? 0.95 : 0.9,
-            temperature: isPerformanceModeEnabled ? 0.6 : 0.7,
+            topK: tK,
+            topP: tP,
+            temperature: temp,
             enableVisionModality: false
         )
 
@@ -631,24 +672,30 @@ final class OnDeviceLLMService: ObservableObject {
 
     private func createLaTeXGenerationPrompt(additionalPrompt: String?) -> String {
         let basePrompt = """
-        You are a LaTeX transcription tool. Convert the images shown into LaTeX code.
+        Look at the image(s) I provided above. What text, equations, or content do you see in the image?
 
-        Requirements:
-        - Use ONLY \\documentclass{article} with \\usepackage{amsmath} and \\usepackage{amssymb}
-        - Do NOT use: \\includegraphics, \\geometry, \\pagestyle, \\fancyhdr, \\fancyhead, \\fancyfoot, \\renewcommand, tabular, table, tikz, tikzpicture, or any other packages
-        - Do NOT add \\section, \\subsection, or explanatory text about the LaTeX code itself
-        - Just transcribe exactly what you see in the image - text, equations, lists
+        Transcribe it into this LaTeX format:
+
+        \\documentclass{article}
+        \\usepackage{amsmath}
+        \\usepackage{amssymb}
+        \\begin{document}
+
+        [transcribe the actual content from the image here]
+
+        \\end{document}
+
+        Important:
+        - Only transcribe what you actually see in the provided image
+        - Use $ $ for inline math, \\[ \\] for display math
         - Use \\textbf{} for bold, \\textit{} for italic
-        - For math: Use ONLY \\[ \\] for display math and $ $ for inline math
-        - NEVER use \\begin{equation}, \\begin{align}, \\begin{gather}, \\begin{multline}, or ANY \\begin{}...\\end{} environments
-        - Keep it minimal and direct - no commentary, no meta-descriptions
-        - For diagrams or figures, just write [Figure: description] as plain text
-
-        Important: Return ONLY the LaTeX code, no explanations or markdown formatting.
+        - If there's a diagram, write [Figure: description]
+        - Do NOT make up example content
+        - Do NOT include explanations, only LaTeX code
         """
 
         if let additional = additionalPrompt, !additional.isEmpty {
-            return basePrompt + "\n\nAdditional instructions: \(additional)"
+            return basePrompt + "\n\n" + additional
         }
 
         return basePrompt

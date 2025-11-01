@@ -299,8 +299,8 @@ struct MainGenerationView: View {
             }
             
             do {
-                let prompt = "You are an expert at converting images to LaTeX..." // Keep your prompt here
-                currentLaTeX = try await onDeviceLLMService.generateLaTeX(from: selectedImages, additionalPrompt: prompt, status: generationStatus)
+                // No additional prompt needed - the base prompt in OnDeviceLLMService is comprehensive
+                currentLaTeX = try await onDeviceLLMService.generateLaTeX(from: selectedImages, additionalPrompt: nil, status: generationStatus)
                 
                 if Task.isCancelled { return }
                 

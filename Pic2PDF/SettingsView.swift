@@ -13,7 +13,15 @@ struct SettingsView: View {
     @StateObject private var downloadManager = ModelDownloadManager.shared
     @StateObject private var llmService = OnDeviceLLMService.shared
     @AppStorage("performanceModeEnabled") private var performanceModeEnabled = false
+    
+    // LLM Parameters
+    @AppStorage("llmTemperature") private var temperature: Double = 0.7
+    @AppStorage("llmTopP") private var topP: Double = 0.9
+    @AppStorage("llmTopK") private var topK: Int = 40
+    @AppStorage("llmMaxTokens") private var maxTokens: Int = 2000
+    
     @State private var showClearDataAlert = false
+    @State private var showResetParamsAlert = false
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
@@ -35,6 +43,104 @@ struct SettingsView: View {
                     .padding(.top, 2)
                 } header: {
                     Text("Performance")
+                }
+                
+                // LLM Parameters Section
+                Section {
+                    VStack(alignment: .leading, spacing: 12) {
+                        // Temperature
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Text("Temperature")
+                                    .font(.subheadline)
+                                Spacer()
+                                Text(String(format: "%.2f", temperature))
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                            }
+                            Slider(value: $temperature, in: 0.1...1.5, step: 0.05)
+                                .tint(.blue)
+                            Text("Controls randomness. Lower = more focused, Higher = more creative")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        Divider()
+                        
+                        // Top P
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Text("Top P (Nucleus Sampling)")
+                                    .font(.subheadline)
+                                Spacer()
+                                Text(String(format: "%.2f", topP))
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                            }
+                            Slider(value: $topP, in: 0.1...1.0, step: 0.05)
+                                .tint(.blue)
+                            Text("Limits token choices by cumulative probability. Lower = more focused")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        Divider()
+                        
+                        // Top K
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Text("Top K")
+                                    .font(.subheadline)
+                                Spacer()
+                                Text("\(topK)")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                            }
+                            Slider(value: Binding(
+                                get: { Double(topK) },
+                                set: { topK = Int($0) }
+                            ), in: 1...100, step: 1)
+                                .tint(.blue)
+                            Text("Limits token choices to top K options. Lower = more deterministic")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        Divider()
+                        
+                        // Max Tokens
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Text("Max Tokens")
+                                    .font(.subheadline)
+                                Spacer()
+                                Text("\(maxTokens)")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                            }
+                            Slider(value: Binding(
+                                get: { Double(maxTokens) },
+                                set: { maxTokens = Int($0) }
+                            ), in: 500...4000, step: 100)
+                                .tint(.blue)
+                            Text("Maximum output length. Higher = longer documents, more memory")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .padding(.vertical, 8)
+                    
+                    Button(action: { showResetParamsAlert = true }) {
+                        HStack {
+                            Image(systemName: "arrow.counterclockwise")
+                            Text("Reset to Defaults")
+                        }
+                        .foregroundColor(.blue)
+                    }
+                } header: {
+                    Text("LLM Parameters")
+                } footer: {
+                    Text("Advanced settings for AI model behavior. Changes take effect on next generation.")
                 }
                 
                 // Storage Section
@@ -183,7 +289,7 @@ struct SettingsView: View {
                             .foregroundColor(.secondary)
                     }
                     
-                    Link(destination: URL(string: "https://github.com")!) {
+                    Link(destination: URL(string: "https://github.com/youneslaaroussi/Pic2PDF")!) {
                         HStack {
                             Image(systemName: "link")
                             Text("GitHub Repository")
@@ -193,20 +299,10 @@ struct SettingsView: View {
                         }
                     }
                     
-                    // Privacy & Terms
-                    Link(destination: URL(string: "https://pic2pdf.app/privacy")!) {
+                    Link(destination: URL(string: "https://github.com/youneslaaroussi/Pic2PDF/blob/main/PRIVACY.md")!) {
                         HStack {
                             Image(systemName: "hand.raised.fill")
                             Text("Privacy Policy")
-                            Spacer()
-                            Image(systemName: "arrow.up.right")
-                                .font(.caption)
-                        }
-                    }
-                    Link(destination: URL(string: "https://pic2pdf.app/terms")!) {
-                        HStack {
-                            Image(systemName: "doc.text.fill")
-                            Text("Terms of Service")
                             Spacer()
                             Image(systemName: "arrow.up.right")
                                 .font(.caption)
@@ -229,6 +325,14 @@ struct SettingsView: View {
             } message: {
                 Text("Are you sure you want to delete all saved generations? This action cannot be undone.")
             }
+            .alert("Reset LLM Parameters", isPresented: $showResetParamsAlert) {
+                Button("Cancel", role: .cancel) {}
+                Button("Reset") {
+                    resetLLMParameters()
+                }
+            } message: {
+                Text("Reset all LLM parameters to their default values?")
+            }
         }
     }
     
@@ -238,6 +342,13 @@ struct SettingsView: View {
         } catch {
             print("[Settings] ERROR: Failed to clear data: \(error)")
         }
+    }
+    
+    private func resetLLMParameters() {
+        temperature = 0.7
+        topP = 0.9
+        topK = 40
+        maxTokens = 2000
     }
 }
 
