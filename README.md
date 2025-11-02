@@ -1,6 +1,6 @@
 # Img2Latex Whitepaper
 
-**Stream multimodal AI inference at 18+ tokens/sec. Watch Gemma 3N vision models convert math to LaTeX in real-time. Zero cloud APIs. Pure ARM64.**
+**Stream multimodal AI inference at 5–10 tokens/sec (on Arm SME2-enabled devices). Watch Gemma 3N vision models convert math to LaTeX in real-time. Zero cloud APIs. Pure ARM64.**
 
 [![ARM64 Optimized](https://img.shields.io/badge/ARM64-Optimized-orange?style=flat-square&logo=arm)](https://www.arm.com/)
 [![MediaPipe](https://img.shields.io/badge/MediaPipe-0.10.24-blue?style=flat-square)](https://developers.google.com/mediapipe)
@@ -42,7 +42,7 @@ Img2Latex demonstrates ARM-optimized on-device AI for multimodal document unders
 
 **ARM64 Optimizations**:
 - **Accelerate Framework** [[3]](#references): vImage SIMD operations for parallel image downscaling (ARM NEON)
-- **INT4 Quantization**: 4-bit weights optimized for ARM integer pipelines (~500MB for 2B model)
+- **INT4 Quantization**: 4-bit weights optimized for ARM integer pipelines 
 - **Thermal Management**: ProcessInfo monitoring with adaptive performance tuning
 - **Zero GPU Dependency**: Pure CPU inference leveraging ARM's efficient matrix operations via KleidiAI [[4]](#references)
 
@@ -55,7 +55,7 @@ Img2Latex demonstrates ARM-optimized on-device AI for multimodal document unders
 | **AI Inference** | MediaPipe Tasks GenAI 0.10.24 [[2]](#references) | On-device LLM runtime (ARM-optimized via KleidiAI [[4]](#references)/XNNPACK; SME2-compatible on supported devices) |
 | **Vision Processing** | Gemma 3N Vision Encoder/Adapter [[1]](#references) | Multimodal image understanding (extracted from .task files) |
 | **ARM Optimization** | Accelerate Framework (vImage) [[3]](#references) | SIMD-accelerated image downscaling |
-| **Model Format** | INT4 Quantized TFLite | 4-bit quantization for memory efficiency (~500MB for 2B, ~900MB for 4B) |
+| **Model Format** | INT4 Quantized TFLite | 4-bit quantization for memory efficiency |
 | **PDF Rendering** | WKWebView + latex.js [[5]](#references) | Client-side LaTeX compilation to PDF |
 | **Data Persistence** | SwiftData | Type-safe local storage |
 | **UI Framework** | SwiftUI + Charts | Declarative UI with real-time performance visualization |
@@ -458,7 +458,7 @@ You have two options for obtaining the Gemma 3N models:
 1. Build and run the app
 2. Navigate to **Settings** tab
 3. Tap **Download** next to Gemma 3N 2B or 4B
-4. Wait for download to complete (~500MB for 2B, ~900MB for 4B)
+4. Wait for download to complete
 5. Model is automatically initialized after download
 
 #### Option 2: Manual Download
