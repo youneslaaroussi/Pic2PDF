@@ -85,14 +85,6 @@ options.maxImages = 5
 options.enableVisionModality = true
 ```
 
-### INT4 Quantization Benefits
-
-INT4 quantization reduces model size by 4x compared to FP16 while maintaining accuracy for generative tasks:
-- **2B Model**: ~500MB (down from ~2GB FP16)
-- **4B Model**: ~900MB (down from ~3.6GB FP16)
-- **Efficiency**: Reduces memory bandwidth and improves throughput on ARM CPUs
-- **Energy**: Lower power consumption, critical for mobile devices
-
 ---
 
 ## ARM64 Optimizations
