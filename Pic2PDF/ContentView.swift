@@ -465,7 +465,7 @@ struct ModelLoadingOverlay: View {
                         .fontWeight(.bold)
                         .foregroundColor(.white)
                     
-                    Text("Initializing Gemma 3N for on-device processing")
+                    Text("Initializing AI model for on-device processing")
                         .font(.subheadline)
                         .foregroundColor(.white.opacity(0.8))
                         .multilineTextAlignment(.center)
@@ -608,7 +608,7 @@ struct GenerationOverlayView: View {
                                 .fontWeight(.bold)
                                 .foregroundColor(.white)
                             
-                            Text("Powered by Gemma 3N on ARM64")
+                            Text("Powered by on-device AI on ARM64")
                                 .font(.caption)
                                 .foregroundColor(.white.opacity(0.7))
                         }
@@ -1013,7 +1013,7 @@ struct OnDeviceAIStatusBanner: View {
                             .font(.caption)
                             .foregroundColor(.secondary)
                     } else {
-                        Text("Initializing Gemma 3N for on-device processing...")
+                        Text("Initializing AI model for on-device processing...")
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
@@ -1041,7 +1041,7 @@ struct ModelSelectionSheet: View {
         NavigationView {
             List {
                 Section {
-                    ForEach(GemmaModelIdentifier.allCases) { modelId in
+                    ForEach(ModelIdentifier.allCases) { modelId in
                         ModelRow(
                             model: modelId,
                             isSelected: modelId == llmService.selectedModel,
@@ -1079,7 +1079,7 @@ struct ModelSelectionSheet: View {
         }
     }
     
-    private func switchToModel(_ modelId: GemmaModelIdentifier) async {
+    private func switchToModel(_ modelId: ModelIdentifier) async {
         guard !isSwitching else { return }
         
         // Check if model is downloaded first
@@ -1100,7 +1100,7 @@ struct ModelSelectionSheet: View {
         }
     }
     
-    private func downloadModel(_ modelId: GemmaModelIdentifier) async {
+    private func downloadModel(_ modelId: ModelIdentifier) async {
         do {
             try await downloadManager.downloadModel(modelId)
             // After download, offer to switch to it
@@ -1113,7 +1113,7 @@ struct ModelSelectionSheet: View {
 
 // MARK: - Model Row
 struct ModelRow: View {
-    let model: GemmaModelIdentifier
+    let model: ModelIdentifier
     let isSelected: Bool
     let isDownloaded: Bool
     let downloadStatus: ModelDownloadStatus

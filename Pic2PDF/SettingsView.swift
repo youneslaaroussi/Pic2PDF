@@ -189,13 +189,13 @@ struct SettingsView: View {
                             }
                         }
                     )) {
-                        ForEach(GemmaModelIdentifier.allCases.filter { downloadManager.isModelDownloaded($0) }) { model in
+                        ForEach(ModelIdentifier.allCases.filter { downloadManager.isModelDownloaded($0) }) { model in
                             Text(model.displayName).tag(model)
                         }
                     }
                     
                     // Downloaded Models List
-                    ForEach([GemmaModelIdentifier.gemma2B, GemmaModelIdentifier.gemma4B], id: \.self) { model in
+                    ForEach([ModelIdentifier.gemma2B, ModelIdentifier.gemma4B], id: \.self) { model in
                         HStack {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(model.displayName)

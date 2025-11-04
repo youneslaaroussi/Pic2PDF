@@ -286,7 +286,7 @@ struct FeaturesPage: View {
 // MARK: - Model Download Page
 struct ModelDownloadPage: View {
     @StateObject private var downloadManager = ModelDownloadManager.shared
-    @State private var selectedModel: GemmaModelIdentifier = .gemma2B
+    @State private var selectedModel: ModelIdentifier = .gemma2B
     @State private var isDownloading = false
     @State private var downloadError: String?
     
@@ -314,7 +314,7 @@ struct ModelDownloadPage: View {
             // Model Selection
             if !downloadManager.downloadStatus.isCompleted {
                 VStack(spacing: 16) {
-                    ForEach([GemmaModelIdentifier.gemma2B, GemmaModelIdentifier.gemma4B], id: \.self) { model in
+                    ForEach([ModelIdentifier.gemma2B, ModelIdentifier.gemma4B], id: \.self) { model in
                         ModelOptionCard(
                             model: model,
                             isSelected: selectedModel == model,
@@ -511,7 +511,7 @@ struct ModelDownloadPage: View {
 }
 
 struct ModelOptionCard: View {
-    let model: GemmaModelIdentifier
+    let model: ModelIdentifier
     let isSelected: Bool
     let isDownloaded: Bool
     let onSelect: () -> Void

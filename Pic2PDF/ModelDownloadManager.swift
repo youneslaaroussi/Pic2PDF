@@ -10,13 +10,13 @@ import Combine
 
 /// Configuration for downloadable models
 struct DownloadableModelConfig {
-    let identifier: GemmaModelIdentifier
+    let identifier: ModelIdentifier
     let downloadURL: URL
     let expectedSizeMB: Double
     let checksum: String? // Optional SHA256 checksum for verification
     
     // Cloudflare R2 - Production URLs
-    static let availableModels: [GemmaModelIdentifier: DownloadableModelConfig] = [
+    static let availableModels: [ModelIdentifier: DownloadableModelConfig] = [
         .gemma2B: DownloadableModelConfig(
             identifier: .gemma2B,
             downloadURL: URL(string: "https://pub-69c747d5957f4104a2f87b0aca35a2af.r2.dev/gemma-3n-E2B-it-int4.task")!,
@@ -85,18 +85,18 @@ final class ModelDownloadManager: NSObject, ObservableObject {
     }
     
     /// Get the local path for a model file
-    func localModelPath(for identifier: GemmaModelIdentifier) -> URL {
+    func localModelPath(for identifier: ModelIdentifier) -> URL {
         return modelsDirectory.appendingPathComponent(identifier.fileName)
     }
     
     /// Check if a model is already downloaded
-    func isModelDownloaded(_ identifier: GemmaModelIdentifier) -> Bool {
+    func isModelDownloaded(_ identifier: ModelIdentifier) -> Bool {
         let path = localModelPath(for: identifier)
         return FileManager.default.fileExists(atPath: path.path)
     }
     
     /// Get the size of a downloaded model in MB
-    func modelSize(_ identifier: GemmaModelIdentifier) -> Double? {
+    func modelSize(_ identifier: ModelIdentifier) -> Double? {
         let path = localModelPath(for: identifier)
         guard let attributes = try? FileManager.default.attributesOfItem(atPath: path.path),
               let fileSize = attributes[.size] as? Int64 else {
@@ -108,7 +108,7 @@ final class ModelDownloadManager: NSObject, ObservableObject {
     // MARK: - Download Methods
     
     /// Download a model from the configured URL
-    func downloadModel(_ identifier: GemmaModelIdentifier) async throws {
+    func downloadModel(_ identifier: ModelIdentifier) async throws {
         guard let config = DownloadableModelConfig.availableModels[identifier] else {
             throw ModelDownloadError.configurationNotFound
         }
@@ -151,7 +151,7 @@ final class ModelDownloadManager: NSObject, ObservableObject {
     }
     
     /// Delete a downloaded model
-    func deleteModel(_ identifier: GemmaModelIdentifier) throws {
+    func deleteModel(_ identifier: ModelIdentifier) throws {
         let path = localModelPath(for: identifier)
         if FileManager.default.fileExists(atPath: path.path) {
             try FileManager.default.removeItem(at: path)

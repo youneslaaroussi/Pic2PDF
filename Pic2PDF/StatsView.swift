@@ -50,7 +50,7 @@ struct StatsView: View {
                             .font(.title)
                             .fontWeight(.bold)
 
-                        Text("Real-time metrics from on-device Gemma 3N")
+                        Text("Real-time metrics from on-device AI")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)

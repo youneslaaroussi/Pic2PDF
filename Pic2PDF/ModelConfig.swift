@@ -11,18 +11,18 @@ import Foundation
 extension DownloadableModelConfig {
     /// Update these URLs with your actual model download links
     /// The models should be in .task format compatible with MediaPipe
-    static func updateDownloadURLs() -> [GemmaModelIdentifier: DownloadableModelConfig] {
+    static func updateDownloadURLs() -> [ModelIdentifier: DownloadableModelConfig] {
         return [
             .gemma2B: DownloadableModelConfig(
                 identifier: .gemma2B,
-                // TODO: Replace with actual download URL for Gemma 2B model
+                // TODO: Replace with actual download URL for 2B model
                 downloadURL: URL(string: "https://example.com/models/gemma-3n-E2B-it-int4.task")!,
                 expectedSizeMB: 500.0,
                 checksum: nil // Optional: Add SHA256 checksum for verification
             ),
             .gemma4B: DownloadableModelConfig(
                 identifier: .gemma4B,
-                // TODO: Replace with actual download URL for Gemma 4B model
+                // TODO: Replace with actual download URL for 4B model
                 downloadURL: URL(string: "https://example.com/models/gemma-3n-E4B-it-int4.task")!,
                 expectedSizeMB: 900.0,
                 checksum: nil // Optional: Add SHA256 checksum for verification
@@ -43,7 +43,7 @@ extension DownloadableModelConfig {
  
  .gemma2B: DownloadableModelConfig(
      identifier: .gemma2B,
-     downloadURL: URL(string: "https://storage.googleapis.com/your-bucket/gemma-3n-E2B-it-int4.task")!,
+     downloadURL: URL(string: "https://storage.googleapis.com/your-bucket/model-2B.task")!,
      expectedSizeMB: 512.5,
      checksum: "abc123def456..." // Optional SHA256 hash
  )

@@ -13,8 +13,8 @@ import Combine
 import Accelerate
 import os.signpost
 
-/// Represents the available Gemma models optimized for image-to-LaTeX conversion
-public enum GemmaModelIdentifier: String, CaseIterable, Identifiable {
+/// Represents the available AI models optimized for image-to-LaTeX conversion
+public enum ModelIdentifier: String, CaseIterable, Identifiable {
     case gemma2B = "gemma-3n-E2B-it-int4"
     case gemma4B = "gemma-3n-E4B-it-int4"
 
@@ -23,25 +23,25 @@ public enum GemmaModelIdentifier: String, CaseIterable, Identifiable {
 
     public var displayName: String {
         switch self {
-        case .gemma2B: return "Gemma 3N (2B)"
-        case .gemma4B: return "Gemma 3N (4B)"
+        case .gemma2B: return "Vision Model 2B"
+        case .gemma4B: return "Vision Model 4B"
         }
     }
 
     /// Checks which models are actually present in the app bundle
-    public static func availableInBundle() -> [GemmaModelIdentifier] {
-        return GemmaModelIdentifier.allCases.filter { modelId in
+    public static func availableInBundle() -> [ModelIdentifier] {
+        return ModelIdentifier.allCases.filter { modelId in
             Bundle.main.path(forResource: modelId.rawValue, ofType: "task") != nil
         }
     }
 }
 
-/// Manages the on-device Gemma model, including initialization and vision component extraction
-struct OnDeviceGemmaModel {
+/// Manages the on-device AI model, including initialization and vision component extraction
+struct OnDeviceModel {
     private(set) var inference: LlmInference
-    let identifier: GemmaModelIdentifier
+    let identifier: ModelIdentifier
 
-    init(modelIdentifier: GemmaModelIdentifier, maxTokens: Int = 1000) throws {
+    init(modelIdentifier: ModelIdentifier, maxTokens: Int = 1000) throws {
         self.identifier = modelIdentifier
         let fileManager = FileManager.default
         let cacheDir = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
@@ -88,7 +88,7 @@ struct OnDeviceGemmaModel {
            !fileManager.fileExists(atPath: extractedVisionAdapterPath.path) {
             NSLog("Extracting vision models from .task file...")
             do {
-                try OnDeviceGemmaModel.extractVisionModels(
+                try OnDeviceModel.extractVisionModels(
                     fromArchive: modelCopyPath,
                     toDirectory: cacheDir,
                     filesToExtract: [visionEncoderFileName, visionAdapterFileName]
@@ -136,12 +136,12 @@ struct OnDeviceGemmaModel {
     }
 }
 
-/// Represents a chat session with the on-device Gemma model
-final class GemmaChatSession {
-    private let model: OnDeviceGemmaModel
+/// Represents a chat session with the on-device AI model
+final class AIChatSession {
+    private let model: OnDeviceModel
     private var session: LlmInference.Session
 
-    init(model: OnDeviceGemmaModel,
+    init(model: OnDeviceModel,
          topK: Int = 40,
          topP: Float = 0.9,
          temperature: Float = 0.7,
@@ -154,9 +154,9 @@ final class GemmaChatSession {
         options.temperature = temperature
         options.enableVisionModality = enableVisionModality
         
-        NSLog("[GemmaChatSession] Creating session with visionModality=\(enableVisionModality), topK=\(topK), temp=\(temperature)")
+        NSLog("[AIChatSession] Creating session with visionModality=\(enableVisionModality), topK=\(topK), temp=\(temperature)")
         session = try LlmInference.Session(llmInference: model.inference, options: options)
-        NSLog("[GemmaChatSession] Session created successfully")
+        NSLog("[AIChatSession] Session created successfully")
     }
 
     /// Adds an image to the current query context
@@ -186,7 +186,7 @@ final class GemmaChatSession {
 struct GenerationMetrics: Identifiable {
     let id = UUID()
     let timestamp: Date
-    let modelIdentifier: GemmaModelIdentifier
+    let modelIdentifier: ModelIdentifier
     let inputImageCount: Int
     let outputTokenCount: Int
     let generationTime: TimeInterval
@@ -227,7 +227,7 @@ final class OnDeviceLLMService: ObservableObject {
 
     // MARK: - Public Model Access
     /// Public access to current model information for UI display
-    var currentModelInfo: (identifier: GemmaModelIdentifier, isInitialized: Bool) {
+    var currentModelInfo: (identifier: ModelIdentifier, isInitialized: Bool) {
         if let model = currentModel {
             return (model.identifier, true)
         }
@@ -235,14 +235,14 @@ final class OnDeviceLLMService: ObservableObject {
     }
     
     /// Get the currently selected model identifier
-    var selectedModel: GemmaModelIdentifier {
+    var selectedModel: ModelIdentifier {
         return preferredModel
     }
 
     // MARK: - Private Properties
-    private var currentModel: OnDeviceGemmaModel?
-    private var currentSession: GemmaChatSession?
-    private var preferredModel: GemmaModelIdentifier = .gemma2B
+    private var currentModel: OnDeviceModel?
+    private var currentSession: AIChatSession?
+    private var preferredModel: ModelIdentifier = .gemma2B
     private var metricsTimer: Timer?
     private let signpostLog = OSLog(subsystem: "com.pic2pdf.app", category: "LLM")
     private var firstTokenLogged = false
@@ -372,7 +372,7 @@ final class OnDeviceLLMService: ObservableObject {
 
     // MARK: - Model Management
 
-    /// Initializes the preferred Gemma model
+    /// Initializes the preferred AI model
     private func initializeModel() async {
         do {
             let startTime = Date()
@@ -380,8 +380,8 @@ final class OnDeviceLLMService: ObservableObject {
 
             // Use user-configured max tokens, with performance mode override
             let maxTokens = isPerformanceModeEnabled ? min(1200, userMaxTokens) : userMaxTokens
-            currentModel = try OnDeviceGemmaModel(modelIdentifier: preferredModel, maxTokens: maxTokens)
-            currentSession = try GemmaChatSession(model: currentModel!)
+            currentModel = try OnDeviceModel(modelIdentifier: preferredModel, maxTokens: maxTokens)
+            currentSession = try AIChatSession(model: currentModel!)
 
             let endTime = Date()
             modelInitializationTime = endTime.timeIntervalSince(startTime)
@@ -390,7 +390,7 @@ final class OnDeviceLLMService: ObservableObject {
             initializationError = nil
 
             os_signpost(.end, log: signpostLog, name: "ModelInit")
-            NSLog("Gemma model \(preferredModel.displayName) initialized in \(modelInitializationTime)s (perfMode=\(isPerformanceModeEnabled))")
+            NSLog("AI model \(preferredModel.displayName) initialized in \(modelInitializationTime)s (perfMode=\(isPerformanceModeEnabled))")
         } catch {
             initializationError = "Failed to initialize on-device LLM: \(error.localizedDescription)"
             isInitialized = false
@@ -405,7 +405,7 @@ final class OnDeviceLLMService: ObservableObject {
     
     /// Switch to a different model
     /// - Parameter modelIdentifier: The model to switch to
-    func switchModel(to modelIdentifier: GemmaModelIdentifier) async {
+    func switchModel(to modelIdentifier: ModelIdentifier) async {
         guard modelIdentifier != preferredModel else {
             NSLog("Already using model: \(modelIdentifier.displayName)")
             return
@@ -461,7 +461,7 @@ final class OnDeviceLLMService: ObservableObject {
         
         NSLog("[OnDeviceLLM] Creating vision-enabled session (perfMode=\(isPerformanceModeEnabled))")
         NSLog("[OnDeviceLLM] Parameters: temp=\(temp), topP=\(tP), topK=\(tK)")
-        let session = try GemmaChatSession(
+        let session = try AIChatSession(
             model: currentModel!,
             topK: tK,
             topP: tP,
@@ -597,7 +597,7 @@ final class OnDeviceLLMService: ObservableObject {
         
         NSLog("[OnDeviceLLM] Creating text-only session for refinement")
         NSLog("[OnDeviceLLM] Parameters: temp=\(temp), topP=\(tP), topK=\(tK)")
-        let session = try GemmaChatSession(
+        let session = try AIChatSession(
             model: currentModel!,
             topK: tK,
             topP: tP,
