@@ -9,6 +9,10 @@
 [![On-Device](https://img.shields.io/badge/100%25-On--Device-purple?style=flat-square)]()
 [![INT4 Quantized](https://img.shields.io/badge/INT4-Quantized-yellow?style=flat-square)]()
 
+**📱 [Download on the App Store](https://apps.apple.com/ca/app/img2latex/id6754800282)**
+
+| [![Download on the App Store](https://tools.applemediaservices.com/api/badges/download-on-the-app-store/black/en-us?size=250x83&releaseDate=1727568000)](https://apps.apple.com/ca/app/img2latex/id6754800282) |
+|:---:|
 
 ![Architecture Diagram](./diagrams/ArchitectureDiagram.png)
 
@@ -601,6 +605,13 @@ For issues, questions, or contributions:
 ---
 
 **Built with ❤️ for the [Arm AI Developer Challenge 2025](https://arm-ai-developer-challenge.devpost.com/)**
+
+---
+
+**📱 [Download on the App Store](https://apps.apple.com/ca/app/img2latex/id6754800282)**
+
+| [![Download on the App Store](https://tools.applemediaservices.com/api/badges/download-on-the-app-store/black/en-us?size=250x83&releaseDate=1727568000)](https://apps.apple.com/ca/app/img2latex/id6754800282) |
+|:---:|
 
 ---
 
